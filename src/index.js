@@ -30,14 +30,5 @@ app.get('/status/:id', (req, res) => {
   res.json(payment);
 });
 
-app.post('/webhook', (req, res) => {
-  const { id, status } = req.body;
-  const payment = payments.find(p => p.id === id);
-  if (!payment) return res.status(404).json({ error: 'payment not found' });
-  payment.status = status;
-  payment.updatedAt = new Date().toISOString();
-  res.json(payment);
-});
-
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`LedgerFlow Payments on :${PORT}`));
