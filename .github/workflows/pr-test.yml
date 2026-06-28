@@ -1,8 +1,5 @@
 name: PR Test Suite
 
-# ⚠️  VULNERABLE: pull_request_target runs in the BASE repo's trusted context
-# (has access to secrets) but the checkout below pulls the FORK's code.
-# The fork's code then executes with full secret access.
 on:
   pull_request_target:
     types: [opened, synchronize]
