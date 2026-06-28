@@ -1,0 +1,38 @@
+name: PR Test Suite
+
+# ⚠️  VULNERABLE: pull_request_target runs in the BASE repo's trusted context
+# (has access to secrets) but the checkout below pulls the FORK's code.
+# The fork's code then executes with full secret access.
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          # ⚠️  This is the fatal combination: checking out the untrusted
+          # fork's SHA while running in the trusted base repo context.
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: npm test
+
+      - name: Upload test results to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          echo "tests passed at $(date)" > test-results.txt
+          aws s3 cp test-results.txt "s3://${{ secrets.S3_BUCKET }}/test-results/pr-${{ github.event.pull_request.number }}.txt"
