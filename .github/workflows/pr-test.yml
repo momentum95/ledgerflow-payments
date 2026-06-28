@@ -11,8 +11,6 @@ jobs:
       - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          # ⚠️  This is the fatal combination: checking out the untrusted
-          # fork's SHA while running in the trusted base repo context.
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install dependencies
